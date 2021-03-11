@@ -97,17 +97,18 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   const { user } = request
   const { id } = request.params
-  const { done } = request.body
 
   const todoList = user.todos;
 
   const todoIndex = todoList.findIndex(todo => todo.id === id);
 
+  if (todoIndex < 0) return response.status(404).json({error: "Todo not founded"})
+
   const oldTodo = todoList[todoIndex]
 
   const updatedTodo = {
     ...oldTodo,
-   done
+   done: true
   }
 
   todoList[todoIndex] = updatedTodo
@@ -119,13 +120,13 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { user } = request
   const { id } = request.params
 
-  const todoList = user.todos
+  const todoFounded = user.todos.find(todo => todo.id === id)
 
-  const todoFounded = todoList.find(todo => todo.id === id)
+  if (!todoFounded) return response.status(404).json({error: "Todo not founded"})
 
-  todoList.splice(todoFounded, 1)
+  user.todos.splice(todoFounded, 1)
 
-  return response.json(todoList)
+  return response.status(204).send()
 });
 
 module.exports = app;
